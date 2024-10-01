@@ -39,6 +39,19 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
+app.post('/user-input', async (req, res) => {
+  const { input_data } = req.body;
+  
+  try {
+    const result = await pool.query('INSERT INTO user_inputs (input_data) VALUES ($1) RETURNING *', [input_data]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Database error');
+  }
+});
+
+
 
 // Start the server
 app.listen(port, () => {
