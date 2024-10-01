@@ -1,2 +1,2 @@
-# Algorithm-Graphs-Visualiser
+# algovis
 IN DEVELOPMENT (soon, really soon)
