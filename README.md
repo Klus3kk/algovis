@@ -4,8 +4,6 @@ IN DEVELOPMENT (soon, really soon)
 
 ## Useful Scripts
 
-
-
 ```bash
 npm install --save-dev nodemon
 
