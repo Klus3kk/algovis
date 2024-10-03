@@ -12,7 +12,8 @@ export default function Home() {
     // Fetch algorithms from backend
     fetch("http://localhost:3001/algorithms")
       .then((response) => response.json())
-      .then((data) => setAlgorithms(data.algorithms));
+      .then((data) => setAlgorithms(data.algorithms))
+      .catch((error) => console.error("Error fetching algorithms:", error));
 
     // Slow reveal effect for title and algorithm list
     setTimeout(() => setShowTitle(true), 500); // Reveal title after 0.5s
@@ -31,8 +32,7 @@ export default function Home() {
             key={index}
             className="text-2xl font-semibold cursor-pointer hover:text-primary mb-4"
           >
-            {/* Use Link component for client-side navigation */}
-            <Link href={`/algorithm/${algo}`}>
+            <Link href={`/algorithm/${encodeURIComponent(algo)}`}>
               {algo}
             </Link>
           </li>

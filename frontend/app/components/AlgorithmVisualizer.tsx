@@ -3,9 +3,10 @@ import * as d3 from "d3";
 
 interface AlgorithmVisualizerProps {
   array: number[];
+  speed: number;
 }
 
-const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ array }) => {
+const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ array, speed }) => {
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -14,14 +15,10 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ array }) => {
     const height = 300;
     const barWidth = width / array.length;
 
-    const yScale = d3.scaleLinear()
-      .domain([0, Math.max(...array)])
-      .range([0, height]);
+    const yScale = d3.scaleLinear().domain([0, Math.max(...array)]).range([0, height]);
 
-    // Clear previous content
-    svg.selectAll("*").remove();
+    svg.selectAll("*").remove();  // Clear previous content
 
-    // Create bars
     const bars = svg
       .selectAll("rect")
       .data(array)
@@ -33,7 +30,6 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ array }) => {
       .attr("height", (d) => yScale(d))
       .attr("fill", "steelblue");
 
-    // Implement Bubble Sort with visual updates
     const bubbleSort = async (arr: number[]) => {
       const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
       let swapped;
@@ -41,26 +37,24 @@ const AlgorithmVisualizer: React.FC<AlgorithmVisualizerProps> = ({ array }) => {
         swapped = false;
         for (let i = 0; i < arr.length - 1; i++) {
           if (arr[i] > arr[i + 1]) {
-            // Swap elements
             [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
             swapped = true;
 
-            // Update the bars
             bars
               .data(arr)
               .transition()
-              .duration(300)
+              .duration(speed)
               .attr("y", (d) => height - yScale(d))
               .attr("height", (d) => yScale(d));
 
-            await delay(300); // Delay for better visualization
+            await delay(speed);  // Delay between steps for visualization
           }
         }
       } while (swapped);
     };
 
-    bubbleSort([...array]); // Pass a copy of the array to avoid mutation
-  }, [array]);
+    bubbleSort([...array]);  // Sort the array without mutating the original
+  }, [array, speed]);
 
   return <svg ref={svgRef} width={500} height={300}></svg>;
 };
