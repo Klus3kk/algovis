@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import StatsPanel from "./StatsPanel";
+import ExplanationPanel from "./ExplanaitionPanel"; // Dodajemy panel wyjaśnień
 
-// Interfejs dla węzła (node)
 interface Node {
   row: number;
   col: number;
@@ -12,20 +13,21 @@ interface Node {
   parent: Node | null;
 }
 
-// Ustawienia siatki
 const numRows = 10;
 const numCols = 10;
 
 const AStarVisualizer = () => {
   const svgRef = useRef(null);
-  const [grid, setGrid] = useState<Node[][]>([]);  // Określony typ siatki
+  const [grid, setGrid] = useState<Node[][]>([]);
+  const [comparisons, setComparisons] = useState(0);
+  const [steps, setSteps] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);  // Dla wyjaśnień
 
   useEffect(() => {
     const width = 500;
     const height = 500;
     const cellSize = width / numCols;
 
-    // Inicjalizacja gridu z typowaniem
     const initialGrid: Node[][] = [];
     for (let row = 0; row < numRows; row++) {
       const rowArray: Node[] = [];
@@ -33,7 +35,7 @@ const AStarVisualizer = () => {
         rowArray.push({
           row,
           col,
-          isWall: Math.random() < 0.2, // Generowanie losowych przeszkód
+          isWall: Math.random() < 0.2,
           f: Infinity,
           g: Infinity,
           h: 0,
@@ -42,27 +44,26 @@ const AStarVisualizer = () => {
       }
       initialGrid.push(rowArray);
     }
-    initialGrid[0][0].isWall = false; // Start
-    initialGrid[numRows - 1][numCols - 1].isWall = false; // Koniec
+    initialGrid[0][0].isWall = false;
+    initialGrid[numRows - 1][numCols - 1].isWall = false;
 
     setGrid(initialGrid);
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll("*").remove(); // Czyszczenie poprzedniego contentu
+    svg.selectAll("*").remove();
 
     svg
       .selectAll("rect")
       .data(initialGrid.flat())
       .enter()
       .append("rect")
-      .attr("x", (d: Node) => d.col * cellSize)  // Określamy typ dla d
-      .attr("y", (d: Node) => d.row * cellSize)  // Określamy typ dla d
+      .attr("x", (d: Node) => d.col * cellSize)
+      .attr("y", (d: Node) => d.row * cellSize)
       .attr("width", cellSize)
       .attr("height", cellSize)
       .attr("fill", (d: Node) => (d.isWall ? "black" : "white"))
       .attr("stroke", "gray");
 
-    // Implementacja A*
     const aStarSearch = () => {
       const startNode = initialGrid[0][0];
       const endNode = initialGrid[numRows - 1][numCols - 1];
@@ -73,15 +74,16 @@ const AStarVisualizer = () => {
       const closedSet: Node[] = [];
 
       function heuristic(node: Node, end: Node): number {
-        return Math.abs(node.row - end.row) + Math.abs(node.col - end.col); // Manhattan distance
+        return Math.abs(node.row - end.row) + Math.abs(node.col - end.col);
       }
 
       function reconstructPath(current: Node | null) {
+        setCurrentStep(5);  // Ostatni krok, znalezienie ścieżki
         while (current !== null) {
           svg
             .selectAll("rect")
             .filter((d: Node) => d === current)
-            .attr("fill", "lightgreen"); // Wypełnienie ścieżki
+            .attr("fill", "lightgreen");
           current = current.parent;
         }
       }
@@ -93,6 +95,8 @@ const AStarVisualizer = () => {
         }
 
         let current = openSet.reduce((prev, curr) => (prev.f < curr.f ? prev : curr));
+        setSteps((prevSteps) => prevSteps + 1);
+        setCurrentStep(1);  // Wybieramy węzeł do eksploracji
 
         if (current === endNode) {
           console.log("Ścieżka znaleziona");
@@ -109,6 +113,7 @@ const AStarVisualizer = () => {
           if (closedSet.includes(neighbor) || neighbor.isWall) return;
 
           const tentativeGScore = current.g + 1;
+          setComparisons((prevComparisons) => prevComparisons + 1);
 
           if (!openSet.includes(neighbor)) {
             openSet.push(neighbor);
@@ -116,6 +121,7 @@ const AStarVisualizer = () => {
             return;
           }
 
+          setCurrentStep(2);  // Obliczanie wartości g i f
           neighbor.parent = current;
           neighbor.g = tentativeGScore;
           neighbor.f = neighbor.g + heuristic(neighbor, endNode);
@@ -126,16 +132,16 @@ const AStarVisualizer = () => {
           .filter((d: Node) => d === current)
           .attr("fill", "lightblue");
 
-        setTimeout(aStarStep, 100); // Kroki algorytmu co 100ms
+        setTimeout(aStarStep, 100);
       }
 
       function getNeighbors(node: Node): Node[] {
         const neighbors: Node[] = [];
         const { row, col } = node;
-        if (row > 0) neighbors.push(initialGrid[row - 1][col]); // Up
-        if (row < numRows - 1) neighbors.push(initialGrid[row + 1][col]); // Down
-        if (col > 0) neighbors.push(initialGrid[row][col - 1]); // Left
-        if (col < numCols - 1) neighbors.push(initialGrid[row][col + 1]); // Right
+        if (row > 0) neighbors.push(initialGrid[row - 1][col]);
+        if (row < numRows - 1) neighbors.push(initialGrid[row + 1][col]);
+        if (col > 0) neighbors.push(initialGrid[row][col - 1]);
+        if (col < numCols - 1) neighbors.push(initialGrid[row][col + 1]);
         return neighbors;
       }
 
@@ -145,7 +151,15 @@ const AStarVisualizer = () => {
     aStarSearch();
   }, []);
 
-  return <svg ref={svgRef} width={500} height={500}></svg>;
+  return (
+    <div className="flex">
+      <svg ref={svgRef} width={500} height={500}></svg>
+      <div className="ml-4">
+        <StatsPanel comparisons={comparisons} swaps={0} steps={steps} />
+        <ExplanationPanel currentStep={currentStep} />  {/* Dodany panel wyjaśnień */}
+      </div>
+    </div>
+  );
 };
 
 export default AStarVisualizer;
