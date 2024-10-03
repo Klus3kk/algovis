@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import AlgorithmVisualizer from "../components/AlgorithmVisualizer"; // Adjust path
+import AlgorithmVisualizer from "../components/AlgorithmVisualizer"; 
 
 export default function Home() {
   const [array, setArray] = useState<number[]>([]);

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 import StatsPanel from "./StatsPanel";
-import ExplanationPanel from "./ExplanaitionPanel"; // Dodajemy panel wyjaśnień
+import ExplanationPanel from "./ExplanaitionPanel"; 
 
 interface Node {
   row: number;
@@ -21,7 +21,7 @@ const AStarVisualizer = () => {
   const [grid, setGrid] = useState<Node[][]>([]);
   const [comparisons, setComparisons] = useState(0);
   const [steps, setSteps] = useState(0);
-  const [currentStep, setCurrentStep] = useState(0);  // Dla wyjaśnień
+  const [currentStep, setCurrentStep] = useState(0);  
 
   useEffect(() => {
     const width = 500;
@@ -78,7 +78,7 @@ const AStarVisualizer = () => {
       }
 
       function reconstructPath(current: Node | null) {
-        setCurrentStep(5);  // Ostatni krok, znalezienie ścieżki
+        setCurrentStep(5);  
         while (current !== null) {
           svg
             .selectAll("rect")
@@ -96,7 +96,7 @@ const AStarVisualizer = () => {
 
         let current = openSet.reduce((prev, curr) => (prev.f < curr.f ? prev : curr));
         setSteps((prevSteps) => prevSteps + 1);
-        setCurrentStep(1);  // Wybieramy węzeł do eksploracji
+        setCurrentStep(1);  
 
         if (current === endNode) {
           console.log("Ścieżka znaleziona");
@@ -121,7 +121,7 @@ const AStarVisualizer = () => {
             return;
           }
 
-          setCurrentStep(2);  // Obliczanie wartości g i f
+          setCurrentStep(2);  
           neighbor.parent = current;
           neighbor.g = tentativeGScore;
           neighbor.f = neighbor.g + heuristic(neighbor, endNode);
@@ -156,7 +156,7 @@ const AStarVisualizer = () => {
       <svg ref={svgRef} width={500} height={500}></svg>
       <div className="ml-4">
         <StatsPanel comparisons={comparisons} swaps={0} steps={steps} />
-        <ExplanationPanel currentStep={currentStep} />  {/* Dodany panel wyjaśnień */}
+        <ExplanationPanel currentStep={currentStep} /> 
       </div>
     </div>
   );
