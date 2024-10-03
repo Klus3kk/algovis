@@ -1,6 +1,6 @@
 # algovis
 
-IN DEVELOPMENT (soon, really soon)
+IN DEVELOPMENT 
 
 ## Useful Scripts
 
