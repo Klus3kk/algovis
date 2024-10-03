@@ -1,51 +1,43 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
-import AlgorithmVisualizer from "./components/AlgorithmVisualizer";
-
+import Link from "next/link";
 
 export default function Home() {
   const [algorithms, setAlgorithms] = useState<string[]>([]);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
-  const [array, setArray] = useState<number[]>([]);
+  const [showTitle, setShowTitle] = useState(false);
+  const [showList, setShowList] = useState(false);
 
   useEffect(() => {
-    // Fetch algorithms from the backend
+    // Fetch algorithms from backend
     fetch("http://localhost:3001/algorithms")
       .then((response) => response.json())
       .then((data) => setAlgorithms(data.algorithms));
 
-    // Generate a random array for visualization
-    const randomArray = Array.from({ length: 20 }, () => Math.floor(Math.random() * 100));
-    setArray(randomArray);
+    // Slow reveal effect for title and algorithm list
+    setTimeout(() => setShowTitle(true), 500); // Reveal title after 0.5s
+    setTimeout(() => setShowList(true), 1000); // Reveal list after 1s
   }, []);
 
-  const handleAlgorithmSelect = (algo: string) => {
-    setSelectedAlgorithm(algo);
-    // Here you can implement different algorithm visualizations
-  };
-
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">Available Algorithms</h2>
-      <ul className="list-disc ml-5">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background text-foreground">
+      <h1 className={`text-6xl font-bold mb-8 transition-opacity duration-1000 ${showTitle ? 'opacity-100' : 'opacity-0'}`}>
+        Algorithm Visualizer
+      </h1>
+
+      <ul className={`transition-opacity duration-1000 ${showList ? 'opacity-100' : 'opacity-0'}`}>
         {algorithms.map((algo, index) => (
           <li
             key={index}
-            className="p-2 border-b cursor-pointer"
-            onClick={() => handleAlgorithmSelect(algo)}
+            className="text-2xl font-semibold cursor-pointer hover:text-primary mb-4"
           >
-            {algo}
+            {/* Use Link component for client-side navigation */}
+            <Link href={`/algorithm/${algo}`}>
+              {algo}
+            </Link>
           </li>
         ))}
       </ul>
-
-      {selectedAlgorithm && (
-        <div className="mt-10">
-          <h3 className="text-lg font-bold mb-4">{selectedAlgorithm} Visualization</h3>
-          <AlgorithmVisualizer array={array} />
-        </div>
-      )}
     </div>
   );
 }
